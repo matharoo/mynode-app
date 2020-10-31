@@ -1,14 +1,6 @@
 const express = require("express");
 const app = express();
 
-function busytask(limit = 4999999999) {
-  let count = 1;
-  for (let i = 0; i < limit; i++) {
-    count += 1;
-  }
-  return count;
-}
- 
 app.listen(3000, function () {
   console.log("listening on 3000");
 });
@@ -28,8 +20,19 @@ app.get("/create", (req, res) => {
   console.log("CREATE user");
 });
 
-app.get("/compute", (req, res) => {
-  console.log("BUSY task initiated "+Date.now());
-    let x= busytask();
-    res.send("finished loop and sum is : "+x);
-  });
+app.get("/compute", async (req, res) => {
+  let taskid= Date.now();
+  console.log("BUSY task initiated "+taskid);
+  function setImmediatePromise() {
+    return new Promise((resolve) => {
+      setImmediate(() => resolve());
+    });
+  }
+  let count = 1;
+  for (let i = 0; i < 10000000; i++) {
+    count += 1;
+    await setImmediatePromise()
+  }
+  console.log("BUSY task "+taskid+" finished ");
+  res.send("finished loop and sum is : "+count+taskid); // just to get a different count for every job
+});
